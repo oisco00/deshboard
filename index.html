@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>주간업무 · 긴급사항 공유앱</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="loginView" class="login-screen">
+    <div class="login-card">
+      <h2>주간업무 · 긴급사항 공유앱</h2>
+      <p class="muted">카카오톡 단체방에서 하던 보고를 모바일/PC에서 체계적으로 등록·보관·조회·수정할 수 있도록 만든 오프라인 웹앱입니다.</p>
+      <div class="notice" style="margin:16px 0;">
+        기본 관리자 계정: <strong>admin</strong> / 비밀번호: <strong>admin123!</strong><br>
+        기본 시연 계정: <strong>demo</strong> / 비밀번호: <strong>demo1234</strong>
+      </div>
+      <form id="loginForm">
+        <div class="field">
+          <label for="loginUsername">아이디</label>
+          <input id="loginUsername" required autocomplete="username" placeholder="아이디 입력">
+        </div>
+        <div class="field" style="margin-top:12px;">
+          <label for="loginPassword">비밀번호</label>
+          <input id="loginPassword" type="password" required autocomplete="current-password" placeholder="비밀번호 입력">
+        </div>
+        <div class="toolbar">
+          <button class="btn" type="submit">로그인</button>
+          <button class="btn light" type="button" id="seedResetBtn">초기 데이터 다시 불러오기</button>
+        </div>
+      </form>
+      <div class="help-box" style="margin-top:16px;">
+        이 앱은 인터넷 없이도 실행됩니다. 데이터는 브라우저에 저장되므로 같은 기기에서는 계속 볼 수 있습니다.
+      </div>
+    </div>
+  </div>
+
+  <div id="appView" class="hidden">
+    <div class="app-shell">
+      <div class="topbar">
+        <div>
+          <h1>주간업무 · 수시긴급 공유 시스템</h1>
+          <p>입력 · 첨부 · 보관 · 일자별 조회 · 주간 종합보고 · PNG/HTML/PDF 공유</p>
+        </div>
+        <div class="topbar-right">
+          <div class="pill" id="userBadge">로그인 사용자</div>
+          <button class="btn ghost small" id="logoutBtn">로그아웃</button>
+        </div>
+      </div>
+
+      <div class="layout">
+        <aside class="sidebar">
+          <h3>메뉴</h3>
+          <button class="nav-btn active" data-tab="dashboardPanel">대시보드</button>
+          <button class="nav-btn" data-tab="entryPanel">업무 등록</button>
+          <button class="nav-btn" data-tab="listPanel">일자별 조회</button>
+          <button class="nav-btn" data-tab="summaryPanel">주간 종합보고</button>
+          <button class="nav-btn admin-only" data-tab="usersPanel">사용자 관리</button>
+          <button class="nav-btn" data-tab="backupPanel">백업 / 복원</button>
+        </aside>
+
+        <main class="content">
+          <section class="panel" id="dashboardPanel">
+            <h2>대시보드</h2>
+            <div class="grid-cards" id="dashboardCards"></div>
+            <div class="panel" style="padding:0;box-shadow:none;background:transparent;margin-top:16px;">
+              <div class="record-card">
+                <div class="record-head">
+                  <div>
+                    <div class="record-title">최근 등록 현황</div>
+                    <div class="muted">최근 수정된 업무 10건을 표시합니다.</div>
+                  </div>
+                </div>
+                <div id="recentRecords"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel hidden" id="entryPanel">
+            <h2>업무 등록 / 수정</h2>
+            <div class="notice">첨부 엑셀 구조를 반영하여 <strong>구분 · 대상 · 안건 · 협의 결과 · 담당자 · 비고</strong> 중심으로 입력하도록 구성했습니다.</div>
+            <form id="recordForm">
+              <input type="hidden" id="recordId">
+              <div class="form-grid" style="margin-top:14px;">
+                <div class="field span-2">
+                  <label for="meetingType">업무유형</label>
+                  <select id="meetingType">
+                    <option value="주간보고">주간보고</option>
+                    <option value="수시긴급">수시긴급</option>
+                    <option value="기타">기타</option>
+                  </select>
+                </div>
+                <div class="field span-2">
+                  <label for="meetingDate">일자</label>
+                  <input id="meetingDate" type="date" required>
+                </div>
+                <div class="field span-4">
+                  <label for="meetingTitle">회의/보고 제목</label>
+                  <input id="meetingTitle" maxlength="80" placeholder="예: 주간업무 회의록(4/13일)">
+                </div>
+                <div class="field span-2">
+                  <label for="status">상태</label>
+                  <select id="status">
+                    <option value="">선택 안 함</option>
+                    <option value="進">進</option>
+                    <option value="완료">완료</option>
+                    <option value="보류">보류</option>
+                    <option value="긴급">긴급</option>
+                  </select>
+                </div>
+                <div class="field span-2">
+                  <label for="owner">담당자</label>
+                  <input id="owner" maxlength="10" placeholder="예: 홍길동A">
+                  <div class="char-count" data-for="owner"></div>
+                </div>
+
+                <div class="field span-3">
+                  <label for="category">구분</label>
+                  <input id="category" maxlength="40" placeholder="예: 신규Biz, 4월, 중점과제">
+                  <div class="char-count" data-for="category"></div>
+                </div>
+                <div class="field span-3">
+                  <label for="target">대상 / 업체 / 관련부서</label>
+                  <input id="target" maxlength="30" placeholder="예: 신성ST">
+                  <div class="char-count" data-for="target"></div>
+                </div>
+                <div class="field span-6">
+                  <label for="note">비고</label>
+                  <input id="note" maxlength="60" placeholder="예: 4/15일 미팅 예정, 도면 회신 대기">
+                  <div class="char-count" data-for="note"></div>
+                </div>
+
+                <div class="field span-6">
+                  <label for="agenda">안건</label>
+                  <textarea id="agenda" maxlength="180" placeholder="예: 1. 신규 Biz 확대(부스바 3종 : Type2,4,5)"></textarea>
+                  <div class="char-count" data-for="agenda"></div>
+                </div>
+                <div class="field span-6">
+                  <label for="result">협의 결과 / 조치사항</label>
+                  <textarea id="result" maxlength="220" placeholder="예: 생산 전담인력 선정, 현장 확인 후 견적 수정"></textarea>
+                  <div class="char-count" data-for="result"></div>
+                </div>
+
+                <div class="field span-12">
+                  <label for="attachmentInput">첨부 이미지 / PDF</label>
+                  <input id="attachmentInput" type="file" accept="image/*,application/pdf" multiple>
+                  <small>이미지, PDF를 같이 저장합니다. 수정 시 기존 첨부는 유지되며 원하면 삭제할 수 있습니다.</small>
+                  <div id="attachmentPreview" class="attachments" style="margin-top:10px;"></div>
+                </div>
+              </div>
+              <div class="toolbar">
+                <button class="btn" type="submit">저장</button>
+                <button class="btn light" type="button" id="newRecordBtn">새로 작성</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="panel hidden" id="listPanel">
+            <h2>일자별 / 조건별 조회</h2>
+            <div class="filter-grid">
+              <div class="field span-2">
+                <label for="filterFrom">시작일</label>
+                <input id="filterFrom" type="date">
+              </div>
+              <div class="field span-2">
+                <label for="filterTo">종료일</label>
+                <input id="filterTo" type="date">
+              </div>
+              <div class="field span-2">
+                <label for="filterType">업무유형</label>
+                <select id="filterType">
+                  <option value="">전체</option>
+                  <option value="주간보고">주간보고</option>
+                  <option value="수시긴급">수시긴급</option>
+                  <option value="기타">기타</option>
+                </select>
+              </div>
+              <div class="field span-2">
+                <label for="filterReporter">등록자</label>
+                <select id="filterReporter"></select>
+              </div>
+              <div class="field span-4">
+                <label for="filterKeyword">검색어</label>
+                <input id="filterKeyword" placeholder="구분, 대상, 안건, 협의결과, 담당자, 비고">
+              </div>
+            </div>
+            <div class="toolbar">
+              <button class="btn" id="filterApplyBtn" type="button">조회</button>
+              <button class="btn light" id="filterResetBtn" type="button">초기화</button>
+            </div>
+            <div id="recordList" style="margin-top:14px;"></div>
+          </section>
+
+          <section class="panel hidden" id="summaryPanel">
+            <h2>주간 종합보고 생성</h2>
+            <div class="filter-grid">
+              <div class="field span-2">
+                <label for="summaryFrom">시작일</label>
+                <input id="summaryFrom" type="date">
+              </div>
+              <div class="field span-2">
+                <label for="summaryTo">종료일</label>
+                <input id="summaryTo" type="date">
+              </div>
+              <div class="field span-3">
+                <label for="summaryType">업무유형</label>
+                <select id="summaryType">
+                  <option value="">전체</option>
+                  <option value="주간보고">주간보고</option>
+                  <option value="수시긴급">수시긴급</option>
+                  <option value="기타">기타</option>
+                </select>
+              </div>
+              <div class="field span-5">
+                <label for="summaryTitle">보고서 제목</label>
+                <input id="summaryTitle" value="주간업무 및 긴급사항 종합보고">
+              </div>
+            </div>
+            <div class="toolbar">
+              <button class="btn" id="generateSummaryBtn" type="button">보고서 생성</button>
+              <button class="btn light" id="downloadHtmlBtn" type="button">HTML 다운로드</button>
+              <button class="btn light" id="downloadPngBtn" type="button">PNG 다운로드</button>
+              <button class="btn secondary" id="printPdfBtn" type="button">PDF로 저장</button>
+            </div>
+            <div class="help-box" style="margin-top:12px;">
+              PDF는 브라우저 인쇄창에서 <strong>PDF로 저장</strong>을 선택하면 됩니다. PNG는 현재 보이는 종합보고를 이미지로 저장합니다.
+            </div>
+            <div class="summary-preview" style="margin-top:14px;">
+              <div id="summaryOutput" class="summary-sheet">
+                <h1>주간업무 및 긴급사항 종합보고</h1>
+                <div class="range">기간을 선택한 뒤 보고서 생성을 눌러주세요.</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel hidden" id="usersPanel">
+            <h2>사용자 관리</h2>
+            <div class="notice">관리자만 사용자 계정을 추가할 수 있습니다. 수정 권한은 <strong>본인 또는 관리자</strong>에게만 허용됩니다.</div>
+            <form id="userForm" class="user-grid" style="margin-top:14px;">
+              <div class="field span-3">
+                <label for="newUsername">아이디</label>
+                <input id="newUsername" maxlength="30" placeholder="예: team01">
+              </div>
+              <div class="field span-3">
+                <label for="newName">이름</label>
+                <input id="newName" maxlength="30" placeholder="예: 영업1팀">
+              </div>
+              <div class="field span-3">
+                <label for="newPassword">비밀번호</label>
+                <input id="newPassword" maxlength="30" placeholder="비밀번호">
+              </div>
+              <div class="field span-3">
+                <label for="newRole">권한</label>
+                <select id="newRole">
+                  <option value="user">일반사용자</option>
+                  <option value="admin">관리자</option>
+                </select>
+              </div>
+            </form>
+            <div class="toolbar">
+              <button class="btn" id="addUserBtn" type="button">사용자 추가</button>
+            </div>
+            <div class="table-wrap" style="margin-top:14px;">
+              <table>
+                <thead>
+                  <tr><th>아이디</th><th>이름</th><th>권한</th><th>생성일</th></tr>
+                </thead>
+                <tbody id="userTableBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel hidden" id="backupPanel">
+            <h2>백업 / 복원</h2>
+            <div class="backup-grid">
+              <div class="field span-6">
+                <label>데이터 백업</label>
+                <div class="help-box">현재 저장된 사용자·업무·첨부정보를 JSON 파일로 내려받습니다. 다른 기기에서는 이 파일을 불러오면 이어서 볼 수 있습니다.</div>
+                <div class="toolbar">
+                  <button class="btn" id="exportJsonBtn" type="button">백업 JSON 다운로드</button>
+                </div>
+              </div>
+              <div class="field span-6">
+                <label>데이터 복원</label>
+                <input id="importJsonInput" type="file" accept="application/json">
+                <div class="help-box">복원 시 현재 데이터가 덮어써집니다. 반드시 먼저 백업을 내려받아 두는 것을 권장합니다.</div>
+                <div class="toolbar">
+                  <button class="btn warn" id="importJsonBtn" type="button">JSON 복원</button>
+                </div>
+              </div>
+            </div>
+            <div class="toolbar" style="margin-top:20px;">
+              <button class="btn danger" id="factoryResetBtn" type="button">초기 데이터로 재설정</button>
+            </div>
+          </section>
+        </main>
+      </div>
+      <footer>실행 방식: 폴더 압축 해제 → index.html 실행. 모바일에서는 브라우저로 열어 홈 화면에 추가하면 앱처럼 사용할 수 있습니다.</footer>
+    </div>
+  </div>
+
+  <script src="seed.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
