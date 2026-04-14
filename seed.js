@@ -30,7 +30,7 @@ window.SEED_DATA = {
       "result": "- 생산/품질 전담인력 선정",
       "owner": "정준호C",
       "note": "",
-      "status": "進",
+      "status": "진행",
       "reporterId": "system",
       "reporterName": "초기자료",
       "createdAt": "2025-04-09T09:00:00",
