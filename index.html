@@ -1,305 +1,1195 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>주간업무 · 긴급사항 공유앱</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>주간보고 모바일 앱</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <style>
+    :root{
+      --bg:#f3f6fb;
+      --panel:#ffffff;
+      --line:#d8e0ee;
+      --text:#1e293b;
+      --sub:#64748b;
+      --primary:#0f766e;
+      --primary-soft:#ccfbf1;
+      --danger:#be123c;
+      --warning:#b45309;
+      --success:#047857;
+      --shadow:0 10px 30px rgba(15,23,42,.08);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif}
+    button,input,select,textarea{font:inherit}
+    a{color:inherit}
+    .hidden{display:none!important}
+    .app{max-width:1240px;margin:0 auto;padding:16px 14px 100px}
+    .header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg,#0f172a,#155e75);color:#fff;padding:18px;border-radius:22px;box-shadow:var(--shadow);position:sticky;top:8px;z-index:30}
+    .header h1{margin:0;font-size:1.15rem}
+    .header .meta{font-size:.88rem;opacity:.9}
+    .userbox{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:999px;font-size:.8rem;font-weight:700;background:rgba(255,255,255,.18)}
+    .btn{border:none;border-radius:14px;padding:12px 14px;font-weight:700;cursor:pointer;transition:.2s;box-shadow:none}
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-light{background:#fff;color:var(--text);border:1px solid var(--line)}
+    .btn-danger{background:var(--danger);color:#fff}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff}
+    .tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0}
+    .tab{padding:12px 10px;background:#eaf0f8;border:1px solid transparent;border-radius:14px;text-align:center;font-weight:700;color:#334155;cursor:pointer}
+    .tab.active{background:#fff;border-color:#c7d2fe;color:#0f172a;box-shadow:var(--shadow)}
+    .panel{background:var(--panel);border-radius:22px;padding:18px;box-shadow:var(--shadow);margin-top:14px}
+    .section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+    .section-title h2{margin:0;font-size:1.05rem}
+    .section-title p{margin:4px 0 0;color:var(--sub);font-size:.9rem}
+    .grid{display:grid;gap:12px}
+    .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-weight:700;font-size:.92rem}
+    .field input,.field select,.field textarea{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:14px;background:#fff;outline:none}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 4px rgba(14,165,233,.12)}
+    .field textarea{min-height:112px;resize:vertical;line-height:1.45}
+    .hint{font-size:.8rem;color:var(--sub)}
+    .counter{font-size:.75rem;color:var(--sub);text-align:right}
+    .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px}
+    .stat{padding:16px;border-radius:18px;background:#f8fafc;border:1px solid #e2e8f0}
+    .stat strong{display:block;font-size:1.4rem;margin-top:6px}
+    .stack{display:flex;gap:10px;flex-wrap:wrap}
+    .list-controls{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+    .entry-group{margin-top:18px}
+    .entry-group h3{margin:0 0 8px;font-size:1rem}
+    .entry-card{border:1px solid #e2e8f0;border-radius:18px;background:#fff;padding:14px;margin-bottom:10px}
+    .entry-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .entry-title{font-weight:800;line-height:1.35;margin-bottom:6px}
+    .entry-meta{display:flex;gap:6px;flex-wrap:wrap;color:var(--sub);font-size:.84rem;margin-bottom:8px}
+    .pill{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;background:#eef2ff;font-size:.78rem;font-weight:700;color:#4338ca}
+    .pill.status-progress{background:#ede9fe;color:#5b21b6}
+    .pill.status-done{background:#dcfce7;color:#166534}
+    .pill.status-hold{background:#fef3c7;color:#92400e}
+    .pill.status-urgent{background:#fee2e2;color:#b91c1c}
+    .entry-content{white-space:pre-wrap;line-height:1.5;background:#f8fafc;border-radius:14px;padding:12px;margin-top:8px}
+    .entry-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .thumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .thumb{position:relative;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#f8fafc;width:110px;height:110px;display:flex;align-items:center;justify-content:center}
+    .thumb img{width:100%;height:100%;object-fit:cover}
+    .thumb .filetag{padding:8px;text-align:center;font-size:.78rem;color:var(--sub)}
+    .remove-attach{position:absolute;top:4px;right:4px;border:none;background:rgba(15,23,42,.8);color:#fff;border-radius:999px;width:24px;height:24px;cursor:pointer}
+    .empty{padding:28px 16px;text-align:center;color:var(--sub);border:1px dashed #cbd5e1;border-radius:16px;background:#fff}
+    .chart-bars{display:grid;gap:8px;margin-top:6px}
+    .bar-row{display:grid;grid-template-columns:100px 1fr 44px;gap:10px;align-items:center;font-size:.9rem}
+    .bar-track{height:14px;border-radius:999px;background:#e2e8f0;overflow:hidden}
+    .bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#0891b2,#14b8a6)}
+    .report-preview{background:#f8fafc;border:1px solid #e2e8f0;border-radius:20px;padding:18px;min-height:220px}
+    .report-sheet{max-width:940px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:22px;box-shadow:0 8px 24px rgba(15,23,42,.06)}
+    .report-sheet h1,.report-sheet h2,.report-sheet h3{margin:0}
+    .report-meta{display:flex;gap:10px;flex-wrap:wrap;color:var(--sub);margin:10px 0 16px}
+    .report-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.92rem}
+    .report-table th,.report-table td{border:1px solid #dbe3ef;padding:10px;vertical-align:top;text-align:left}
+    .report-table th{background:#f1f5f9}
+    .summary-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:14px 0}
+    .summary-box{border:1px solid #dbe3ef;border-radius:16px;padding:14px;background:#fff}
+    .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px;background:radial-gradient(circle at top,#dbeafe 0,#f8fafc 42%,#eef2ff 100%)}
+    .login-card{width:min(480px,100%);background:#fff;border-radius:28px;padding:26px;box-shadow:0 30px 60px rgba(15,23,42,.12)}
+    .login-card h1{margin:0 0 6px;font-size:1.35rem}
+    .login-card p{margin:0 0 18px;color:var(--sub);line-height:1.5}
+    .login-demo{margin-top:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:14px;font-size:.9rem}
+    .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 18px;border-radius:999px;box-shadow:var(--shadow);z-index:999;opacity:0;pointer-events:none;transition:.25s}
+    .toast.show{opacity:1}
+    .muted{color:var(--sub)}
+    .inline-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .separator{height:1px;background:#e2e8f0;margin:14px 0}
+    .users-table{width:100%;border-collapse:collapse}
+    .users-table th,.users-table td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left}
+    .danger-text{color:var(--danger)}
+
+    @media (max-width: 980px){
+      .tabs{grid-template-columns:repeat(3,1fr)}
+      .grid-4,.grid-3,.grid-2,.list-controls{grid-template-columns:1fr 1fr}
+      .header{position:static}
+    }
+    @media (max-width: 640px){
+      .app{padding:12px 10px 90px}
+      .tabs{grid-template-columns:repeat(2,1fr)}
+      .grid-4,.grid-3,.grid-2,.list-controls{grid-template-columns:1fr}
+      .panel{padding:14px}
+      .header{padding:14px;border-radius:18px;align-items:flex-start;flex-direction:column}
+      .entry-head{flex-direction:column}
+      .bar-row{grid-template-columns:72px 1fr 36px;font-size:.82rem}
+    }
+    @media print {
+      body{background:#fff}
+      .header,.tabs,#dashboard,#entry,#list,#users,.toast{display:none!important}
+      #report{display:block!important;box-shadow:none;padding:0;margin:0;border:none;background:#fff}
+      #report .section-title,#report .grid,#report .stack{display:none!important}
+      .print-target{display:block!important;box-shadow:none;padding:0;margin:0;border:none;background:#fff}
+      .report-sheet{border:none;box-shadow:none;padding:0;max-width:none}
+    }
+  </style>
 </head>
 <body>
-  <div id="loginView" class="login-screen">
+  <div id="loginScreen" class="login-wrap hidden">
     <div class="login-card">
-      <h2>주간업무 · 긴급사항 공유앱</h2>
-      <p class="muted">카카오톡 단체방에서 하던 보고를 모바일/PC에서 체계적으로 등록·보관·조회·수정할 수 있도록 만든 온라인 웹앱입니다.</p>
-      <div class="notice" style="margin:16px 0;">
-        기본 관리자 계정: <strong>admin</strong> / 비밀번호: <strong>admin123!</strong><br>
-        <관리자 계정으로 로그인시에 현재 등록된 사용자 및 관리자 정보를 확인이 가능합니다> 
-      </div>
-      <form id="loginForm">
+      <h1>주간보고 모바일 앱</h1>
+      <p>카카오톡 단체방에 올리던 주간·긴급 업무를 휴대폰에서 직접 입력하고, 사진 첨부·조회·주간보고서 출력까지 할 수 있는 반응형 앱입니다.</p>
+      <div class="grid">
         <div class="field">
           <label for="loginUsername">아이디</label>
-          <input id="loginUsername" required autocomplete="username" placeholder="아이디 입력">
+          <input id="loginUsername" placeholder="아이디 입력" autocomplete="username" />
         </div>
-        <div class="field" style="margin-top:12px;">
+        <div class="field">
           <label for="loginPassword">비밀번호</label>
-          <input id="loginPassword" type="password" required autocomplete="current-password" placeholder="비밀번호 입력">
+          <input id="loginPassword" type="password" placeholder="비밀번호 입력" autocomplete="current-password" />
         </div>
-        <div class="toolbar">
-          <button class="btn" type="submit">로그인</button>
-          <button class="btn light" type="button" id="seedResetBtn">초기 데이터 다시 불러오기</button>
-        </div>
-      </form>
-      <div class="help-box" style="margin-top:16px;">
-        이 앱은 인터넷 서버에서 실행됩니다. 데이터는 서버에 저장되므로 어디서나 공유되어 계속 볼 수 있습니다.
+      </div>
+      <div class="stack" style="margin-top:14px">
+        <button class="btn btn-primary" id="loginBtn">로그인</button>
+        <button class="btn btn-light" id="fillAdminBtn">관리자 계정 넣기</button>
+      </div>
+      <div class="login-demo">
+        <strong>기본 테스트 계정</strong><br />
+        관리자: <code>admin / admin123</code><br />
+        사용자: <code>manager1 / 1234</code>, <code>user1 / 1234</code>
       </div>
     </div>
   </div>
 
-  <div id="appView" class="hidden">
-    <div class="app-shell">
-      <div class="topbar">
+  <div id="appShell" class="hidden">
+    <div class="app">
+      <div class="header">
         <div>
-          <h1>주간업무 · 수시긴급 공유 시스템</h1>
-          <p>입력 · 첨부 · 보관 · 일자별 조회 · 주간 종합보고 · PNG/HTML/PDF 공유</p>
+          <h1>주간보고 · 수시긴급 사항 관리</h1>
+          <div class="meta" id="headerDateText"></div>
         </div>
-        <div class="topbar-right">
-          <div class="pill" id="userBadge">로그인 사용자</div>
-          <button class="btn ghost small" id="logoutBtn">로그아웃</button>
+        <div class="userbox">
+          <span class="badge" id="currentUserBadge"></span>
+          <button class="btn btn-ghost" id="logoutBtn">로그아웃</button>
         </div>
       </div>
 
-      <div class="layout">
-        <aside class="sidebar">
-          <h3>메뉴</h3>
-          <button class="nav-btn active" data-tab="dashboardPanel">대시보드</button>
-          <button class="nav-btn" data-tab="entryPanel">업무 등록</button>
-          <button class="nav-btn" data-tab="listPanel">일자별 조회</button>
-          <button class="nav-btn" data-tab="summaryPanel">주간 종합보고</button>
-          <button class="nav-btn admin-only" data-tab="usersPanel">사용자 관리</button>
-          <button class="nav-btn" data-tab="backupPanel">백업 / 복원</button>
-        </aside>
+      <div class="tabs" id="tabs">
+        <div class="tab active" data-tab="dashboard">대시보드</div>
+        <div class="tab" data-tab="entry">업무 등록</div>
+        <div class="tab" data-tab="list">일자별 조회</div>
+        <div class="tab" data-tab="report">주간 보고서</div>
+        <div class="tab" data-tab="users">사용자 관리</div>
+      </div>
 
-        <main class="content">
-          <section class="panel" id="dashboardPanel">
-            <h2>대시보드</h2>
-            <div class="grid-cards" id="dashboardCards"></div>
-            <div class="panel" style="padding:0;box-shadow:none;background:transparent;margin-top:16px;">
-              <div class="record-card">
-                <div class="record-head">
-                  <div>
-                    <div class="record-title">최근 등록 현황</div>
-                    <div class="muted">최근 수정된 업무 10건을 표시합니다.</div>
-                  </div>
-                </div>
-                <div id="recentRecords"></div>
-              </div>
-            </div>
-          </section>
+      <section id="dashboard" class="panel view-panel">
+        <div class="section-title">
+          <div>
+            <h2>현황 요약</h2>
+            <p>전체 등록 건수, 진행 상태, 최근 7일 활동을 한눈에 봅니다.</p>
+          </div>
+          <div class="inline-actions">
+            <button class="btn btn-light" id="seedBtn">샘플 데이터 다시 넣기</button>
+            <button class="btn btn-primary" id="quickGoEntryBtn">새 업무 등록</button>
+          </div>
+        </div>
+        <div class="card-grid" id="statCards"></div>
+        <div class="grid grid-2" style="margin-top:14px">
+          <div class="panel" style="margin-top:0;padding:16px">
+            <div class="section-title"><h2 style="font-size:1rem">최근 7일 등록 추이</h2></div>
+            <div id="dailyBars" class="chart-bars"></div>
+          </div>
+          <div class="panel" style="margin-top:0;padding:16px">
+            <div class="section-title"><h2 style="font-size:1rem">최근 등록 업무</h2></div>
+            <div id="recentEntries"></div>
+          </div>
+        </div>
+      </section>
 
-          <section class="panel hidden" id="entryPanel">
+      <section id="entry" class="panel view-panel hidden">
+        <div class="section-title">
+          <div>
             <h2>업무 등록 / 수정</h2>
-            <div class="notice">첨부 엑셀 구조를 반영하여 <strong>구분 · 대상 · 안건 · 협의 결과 · 담당자 · 비고</strong> 중심으로 입력하도록 구성했습니다.</div>
-            <form id="recordForm">
-              <input type="hidden" id="recordId">
-              <div class="form-grid" style="margin-top:14px;">
-                <div class="field span-2">
-                  <label for="meetingType">업무유형</label>
-                  <select id="meetingType">
-                    <option value="주간보고">주간보고</option>
-                    <option value="수시긴급">수시긴급</option>
-                    <option value="기타">기타</option>
-                  </select>
-                </div>
-                <div class="field span-2">
-                  <label for="meetingDate">일자</label>
-                  <input id="meetingDate" type="date" required>
-                </div>
-                <div class="field span-4">
-                  <label for="meetingTitle">회의/보고 제목</label>
-                  <input id="meetingTitle" maxlength="80" placeholder="예: 주간업무 회의록(4/13일)">
-                </div>
-                <div class="field span-2">
-                  <label for="status">상태</label>
-                  <select id="status">
-                    <option value="">선택 안 함</option>
-                    <option value="진행">진행</option>
-                    <option value="완료">완료</option>
-                    <option value="보류">보류</option>
-                    <option value="긴급">긴급</option>
-                  </select>
-                </div>
-                <div class="field span-2">
-                  <label for="owner">담당자</label>
-                  <input id="owner" maxlength="10" placeholder="예: 홍길동A">
-                  <div class="char-count" data-for="owner"></div>
-                </div>
-
-                <div class="field span-3">
-                  <label for="category">구분</label>
-                  <input id="category" maxlength="40" placeholder="예: 신규Biz, 4월, 중점과제">
-                  <div class="char-count" data-for="category"></div>
-                </div>
-                <div class="field span-3">
-                  <label for="target">대상 / 업체 / 관련부서</label>
-                  <input id="target" maxlength="30" placeholder="예: 신성ST">
-                  <div class="char-count" data-for="target"></div>
-                </div>
-                <div class="field span-6">
-                  <label for="note">비고</label>
-                  <input id="note" maxlength="60" placeholder="예: 4/15일 미팅 예정, 도면 회신 대기">
-                  <div class="char-count" data-for="note"></div>
-                </div>
-
-                <div class="field span-6">
-                  <label for="agenda">안건</label>
-                  <textarea id="agenda" maxlength="180" placeholder="예: 1. 신규 Biz 확대(부스바 3종 : Type2,4,5)"></textarea>
-                  <div class="char-count" data-for="agenda"></div>
-                </div>
-                <div class="field span-6">
-                  <label for="result">협의 결과 / 조치사항</label>
-                  <textarea id="result" maxlength="220" placeholder="예: 생산 전담인력 선정, 현장 확인 후 견적 수정"></textarea>
-                  <div class="char-count" data-for="result"></div>
-                </div>
-
-                <div class="field span-12">
-                  <label for="attachmentInput">첨부 이미지 / PDF</label>
-                  <input id="attachmentInput" type="file" accept="image/*,application/pdf" multiple>
-                  <small>이미지, PDF를 같이 저장합니다. 수정 시 기존 첨부는 유지되며 원하면 삭제할 수 있습니다.</small>
-                  <div id="attachmentPreview" class="attachments" style="margin-top:10px;"></div>
-                </div>
-              </div>
-              <div class="toolbar">
-                <button class="btn" type="submit">저장</button>
-                <button class="btn light" type="button" id="newRecordBtn">새로 작성</button>
-              </div>
-            </form>
-          </section>
-
-          <section class="panel hidden" id="listPanel">
-            <h2>일자별 / 조건별 조회</h2>
-            <div class="filter-grid">
-              <div class="field span-2">
-                <label for="filterFrom">시작일</label>
-                <input id="filterFrom" type="date">
-              </div>
-              <div class="field span-2">
-                <label for="filterTo">종료일</label>
-                <input id="filterTo" type="date">
-              </div>
-              <div class="field span-2">
-                <label for="filterType">업무유형</label>
-                <select id="filterType">
-                  <option value="">전체</option>
-                  <option value="주간보고">주간보고</option>
-                  <option value="수시긴급">수시긴급</option>
-                  <option value="기타">기타</option>
-                </select>
-              </div>
-              <div class="field span-2">
-                <label for="filterReporter">등록자</label>
-                <select id="filterReporter"></select>
-              </div>
-              <div class="field span-4">
-                <label for="filterKeyword">검색어</label>
-                <input id="filterKeyword" placeholder="구분, 대상, 안건, 협의결과, 담당자, 비고">
-              </div>
+            <p>첨부 파일 형식을 반영하여 구분·대상·안건·협의결과·담당자·비고·상태 중심으로 입력하도록 구성했습니다.</p>
+          </div>
+        </div>
+        <form id="entryForm">
+          <input type="hidden" id="entryId" />
+          <div class="grid grid-4">
+            <div class="field"><label>등록일자</label><input type="date" id="reportDate" required /></div>
+            <div class="field"><label>회의/등록 시간</label><input type="time" id="meetingTime" value="13:30" /></div>
+            <div class="field">
+              <label>보고 유형</label>
+              <select id="reportType">
+                <option value="주간">주간</option>
+                <option value="긴급">긴급</option>
+              </select>
             </div>
-            <div class="toolbar">
-              <button class="btn" id="filterApplyBtn" type="button">조회</button>
-              <button class="btn light" id="filterResetBtn" type="button">초기화</button>
+            <div class="field">
+              <label>진행 상태</label>
+              <select id="status">
+                <option value="進">進(진행)</option>
+                <option value="完">完(완료)</option>
+                <option value="보류">보류</option>
+                <option value="긴급">긴급</option>
+              </select>
             </div>
-            <div id="recordList" style="margin-top:14px;"></div>
-          </section>
+          </div>
 
-          <section class="panel hidden" id="summaryPanel">
-            <h2>주간 종합보고 생성</h2>
-            <div class="filter-grid">
-              <div class="field span-2">
-                <label for="summaryFrom">시작일</label>
-                <input id="summaryFrom" type="date">
-              </div>
-              <div class="field span-2">
-                <label for="summaryTo">종료일</label>
-                <input id="summaryTo" type="date">
-              </div>
-              <div class="field span-3">
-                <label for="summaryType">업무유형</label>
-                <select id="summaryType">
-                  <option value="">전체</option>
-                  <option value="주간보고">주간보고</option>
-                  <option value="수시긴급">수시긴급</option>
-                  <option value="기타">기타</option>
-                </select>
-              </div>
-              <div class="field span-5">
-                <label for="summaryTitle">보고서 제목</label>
-                <input id="summaryTitle" value="주간업무 및 긴급사항 종합보고">
-              </div>
+          <div class="grid grid-3" style="margin-top:12px">
+            <div class="field">
+              <label>구분</label>
+              <input id="category" list="categoryList" maxlength="30" placeholder="예: 신규Biz, 개발, 품질" />
+              <datalist id="categoryList">
+                <option value="신규Biz"></option><option value="중점과제"></option><option value="개발"></option><option value="제조"></option>
+                <option value="품질"></option><option value="구매"></option><option value="혁신"></option><option value="과제"></option>
+                <option value="공정"></option><option value="교육"></option><option value="훈련"></option><option value="긴급"></option>
+              </datalist>
             </div>
-            <div class="toolbar">
-              <button class="btn" id="generateSummaryBtn" type="button">보고서 생성</button>
-              <button class="btn light" id="downloadHtmlBtn" type="button">HTML 다운로드</button>
-              <button class="btn light" id="downloadPngBtn" type="button">PNG 다운로드</button>
-              <button class="btn secondary" id="printPdfBtn" type="button">PDF로 저장</button>
+            <div class="field">
+              <label>대상 / 업체 / 부서</label>
+              <input id="target" list="targetList" maxlength="40" placeholder="예: LT정밀, LG전자, 본사" />
+              <datalist id="targetList">
+                <option value="신성ST"></option><option value="LT정밀"></option><option value="LG전자"></option><option value="EVA"></option>
+                <option value="본사"></option><option value="사후심사"></option><option value="기타"></option>
+              </datalist>
             </div>
-            <div class="help-box" style="margin-top:12px;">
-              PDF는 브라우저 인쇄창에서 <strong>PDF로 저장</strong>을 선택하면 됩니다. PNG는 현재 보이는 종합보고를 이미지로 저장합니다.
+            <div class="field">
+              <label>담당자</label>
+              <input id="owner" maxlength="40" placeholder="예: 안국환C" />
             </div>
-            <div class="summary-preview" style="margin-top:14px;">
-              <div id="summaryOutput" class="summary-sheet">
-                <h1>주간업무 및 긴급사항 종합보고</h1>
-                <div class="range">기간을 선택한 뒤 보고서 생성을 눌러주세요.</div>
-              </div>
-            </div>
-          </section>
+          </div>
 
-          <section class="panel hidden" id="usersPanel">
+          <div class="grid grid-2" style="margin-top:12px">
+            <div class="field">
+              <label>안건</label>
+              <textarea id="agenda" maxlength="220" placeholder="예: 1. Clamp, 소재 변경 4M 승인 진행"></textarea>
+              <div class="counter" data-counter-for="agenda"></div>
+            </div>
+            <div class="field">
+              <label>협의 결과 / 조치 사항</label>
+              <textarea id="result" maxlength="700" placeholder="예: - 4M 변경점 신고 완료, QA 검증 진행중"></textarea>
+              <div class="counter" data-counter-for="result"></div>
+            </div>
+          </div>
+
+          <div class="grid grid-2" style="margin-top:12px">
+            <div class="field">
+              <label>비고</label>
+              <textarea id="note" maxlength="300" placeholder="예: 4/10일 재점검 예정, 추가 샘플 요청 가능"></textarea>
+              <div class="counter" data-counter-for="note"></div>
+            </div>
+            <div class="field">
+              <label>태그</label>
+              <input id="tags" maxlength="80" placeholder="예: 생산성, 품질, 샘플, 금형" />
+              <div class="hint">쉼표(,)로 구분하면 검색이 편합니다.</div>
+              <label style="margin-top:12px">이미지 / PDF 첨부</label>
+              <input id="attachments" type="file" accept="image/*,.pdf" multiple />
+              <div class="hint">등록한 첨부는 목록과 주간보고서에서 다시 볼 수 있습니다.</div>
+            </div>
+          </div>
+
+          <div id="attachmentPreview" class="thumbs"></div>
+          <div class="stack" style="margin-top:16px">
+            <button class="btn btn-primary" type="submit" id="saveBtn">저장하기</button>
+            <button class="btn btn-light" type="button" id="resetFormBtn">새로 입력</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="list" class="panel view-panel hidden">
+        <div class="section-title">
+          <div>
+            <h2>일자별 개별 등록 내용</h2>
+            <p>기간/상태/검색어 기준으로 조회하고, 본인 또는 관리자만 수정·삭제할 수 있습니다.</p>
+          </div>
+        </div>
+        <div class="list-controls">
+          <div class="field"><label>시작일</label><input type="date" id="filterFrom" /></div>
+          <div class="field"><label>종료일</label><input type="date" id="filterTo" /></div>
+          <div class="field"><label>상태</label><select id="filterStatus"><option value="">전체</option><option value="進">進</option><option value="完">完</option><option value="보류">보류</option><option value="긴급">긴급</option></select></div>
+          <div class="field"><label>구분</label><input id="filterCategory" placeholder="구분 검색" /></div>
+          <div class="field"><label>통합 검색</label><input id="filterText" placeholder="안건/결과/담당자/대상" /></div>
+        </div>
+        <div class="stack" style="margin-top:12px">
+          <button class="btn btn-primary" id="applyFilterBtn">조회</button>
+          <button class="btn btn-light" id="clearFilterBtn">초기화</button>
+        </div>
+        <div id="entryListWrap" style="margin-top:16px"></div>
+      </section>
+
+      <section id="report" class="panel view-panel hidden">
+        <div class="section-title">
+          <div>
+            <h2>주간 보고서 생성</h2>
+            <p>선택 기간의 전체 합계와 상세 업무를 보고서 형식으로 만들고, PNG 또는 PDF로 공유할 수 있습니다.</p>
+          </div>
+        </div>
+        <div class="grid grid-4">
+          <div class="field"><label>시작일</label><input type="date" id="weeklyFrom" /></div>
+          <div class="field"><label>종료일</label><input type="date" id="weeklyTo" /></div>
+          <div class="field"><label>포함 유형</label><select id="weeklyType"><option value="">전체</option><option value="주간">주간만</option><option value="긴급">긴급만</option></select></div>
+          <div class="field"><label>상태</label><select id="weeklyStatus"><option value="">전체</option><option value="進">進</option><option value="完">完</option><option value="보류">보류</option><option value="긴급">긴급</option></select></div>
+        </div>
+        <div class="stack" style="margin-top:12px">
+          <button class="btn btn-primary" id="generateReportBtn">보고서 만들기</button>
+          <button class="btn btn-light" id="copyReportBtn">요약문 복사</button>
+          <button class="btn btn-light" id="pngReportBtn">PNG 다운로드</button>
+          <button class="btn btn-light" id="printReportBtn">PDF 인쇄/저장</button>
+        </div>
+        <div class="report-preview print-target" id="reportPreview" style="margin-top:16px"></div>
+      </section>
+
+      <section id="users" class="panel view-panel hidden">
+        <div class="section-title">
+          <div>
             <h2>사용자 관리</h2>
-            <div class="notice">관리자만 사용자 계정을 추가할 수 있습니다. 수정 권한은 <strong>본인 또는 관리자</strong>에게만 허용됩니다.</div>
-            <form id="userForm" class="user-grid" style="margin-top:14px;">
-              <div class="field span-3">
-                <label for="newUsername">아이디</label>
-                <input id="newUsername" maxlength="30" placeholder="예: team01">
-              </div>
-              <div class="field span-3">
-                <label for="newName">이름</label>
-                <input id="newName" maxlength="30" placeholder="예: 영업1팀">
-              </div>
-              <div class="field span-3">
-                <label for="newPassword">비밀번호</label>
-                <input id="newPassword" maxlength="30" placeholder="비밀번호">
-              </div>
-              <div class="field span-3">
-                <label for="newRole">권한</label>
-                <select id="newRole">
-                  <option value="user">일반사용자</option>
-                  <option value="admin">관리자</option>
-                </select>
-              </div>
-            </form>
-            <div class="toolbar">
-              <button class="btn" id="addUserBtn" type="button">사용자 추가</button>
-            </div>
-            <div class="table-wrap" style="margin-top:14px;">
-              <table>
-                <thead>
-                  <tr><th>아이디</th><th>이름</th><th>권한</th><th>생성일</th></tr>
-                </thead>
-                <tbody id="userTableBody"></tbody>
-              </table>
-            </div>
-          </section>
-
-          <section class="panel hidden" id="backupPanel">
-            <h2>백업 / 복원</h2>
-            <div class="backup-grid">
-              <div class="field span-6">
-                <label>데이터 백업</label>
-                <div class="help-box">현재 저장된 사용자·업무·첨부정보를 JSON 파일로 내려받습니다. 다른 기기에서는 이 파일을 불러오면 이어서 볼 수 있습니다.</div>
-                <div class="toolbar">
-                  <button class="btn" id="exportJsonBtn" type="button">백업 JSON 다운로드</button>
-                </div>
-              </div>
-              <div class="field span-6">
-                <label>데이터 복원</label>
-                <input id="importJsonInput" type="file" accept="application/json">
-                <div class="help-box">복원 시 현재 데이터가 덮어써집니다. 반드시 먼저 백업을 내려받아 두는 것을 권장합니다.</div>
-                <div class="toolbar">
-                  <button class="btn warn" id="importJsonBtn" type="button">JSON 복원</button>
-                </div>
-              </div>
-            </div>
-            <div class="toolbar" style="margin-top:20px;">
-              <button class="btn danger" id="factoryResetBtn" type="button">초기 데이터로 재설정</button>
-            </div>
-          </section>
-        </main>
-      </div>
-      <footer>실행 방식: 폴더 압축 해제 → index.html 실행. 모바일에서는 브라우저로 열어 홈 화면에 추가하면 앱처럼 사용할 수 있습니다.</footer>
+            <p>관리자만 사용자 계정을 추가·비활성화할 수 있습니다.</p>
+          </div>
+        </div>
+        <div id="usersAdminOnly" class="hidden">
+          <div class="grid grid-4">
+            <div class="field"><label>아이디</label><input id="newUsername" maxlength="20" /></div>
+            <div class="field"><label>이름</label><input id="newDisplayName" maxlength="30" /></div>
+            <div class="field"><label>비밀번호</label><input id="newPassword" maxlength="30" /></div>
+            <div class="field"><label>권한</label><select id="newRole"><option value="user">사용자</option><option value="admin">관리자</option></select></div>
+          </div>
+          <div class="stack" style="margin-top:12px"><button class="btn btn-primary" id="addUserBtn">사용자 추가</button></div>
+          <div class="separator"></div>
+        </div>
+        <table class="users-table">
+          <thead><tr><th>아이디</th><th>이름</th><th>권한</th><th>상태</th><th>작업</th></tr></thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </section>
     </div>
   </div>
 
-  <script src="seed.js"></script>
-  <script src="app.js"></script>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const DB_NAME = 'weekly_report_mobile_app_db';
+    const DB_VERSION = 1;
+    const DEFAULT_USERS = [
+      { username: 'admin', password: 'admin123', displayName: '관리자', role: 'admin', active: true, createdAt: new Date().toISOString() },
+      { username: 'manager1', password: '1234', displayName: '현장관리자', role: 'user', active: true, createdAt: new Date().toISOString() },
+      { username: 'user1', password: '1234', displayName: '업무담당자', role: 'user', active: true, createdAt: new Date().toISOString() },
+    ];
+    const SAMPLE_ENTRIES = [
+      {
+        id: crypto.randomUUID(), reportDate: '2026-04-09', meetingTime: '13:30', reportType: '주간', category: '신규Biz',
+        target: '신성ST', agenda: '1. 신규 Biz 확대(부스바 3종 : Type2,4,5)', result: '- 생산/품질 전담인력 선정\n- 클린룸 콘크리트 깊이 타설 결과 확인\n- 금형 검토 및 250톤 1조 활용 검토', owner: '정준호C', note: '4/10일 진척사항 재검토 예정', status: '進', tags: ['신규', '부스바', '금형'], reporter: 'manager1', reporterName: '현장관리자', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), attachments: []
+      },
+      {
+        id: crypto.randomUUID(), reportDate: '2026-04-09', meetingTime: '13:35', reportType: '주간', category: '품질',
+        target: 'LT정밀', agenda: '1. PN2 인아웃 버링부 Burr로 품질 이슈 제기', result: '- Burr 관련 개선대책 요청\n- 불량 대체품 2천개 출하\n- 3월 불량 정산 합의 진행', owner: '안국환C', note: '설계 변경 검토 연계 필요', status: '進', tags: ['품질', 'Burr', '정산'], reporter: 'user1', reporterName: '업무담당자', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), attachments: []
+      },
+      {
+        id: crypto.randomUUID(), reportDate: '2026-04-02', meetingTime: '14:00', reportType: '주간', category: '개발',
+        target: 'LG전자', agenda: '1. Clamp, 소재 변경 4M 승인 진행', result: '- 4M 변경점 신고 완료\n- QA 시험 후 승인 예정\n- 추가 물량 요청(BCA 계열) 대응', owner: '안국환C', note: '변경 자재 샘플 검증 필요', status: '進', tags: ['4M', '소재변경', 'QA'], reporter: 'manager1', reporterName: '현장관리자', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), attachments: []
+      },
+      {
+        id: crypto.randomUUID(), reportDate: '2026-04-02', meetingTime: '14:15', reportType: '주간', category: '공정',
+        target: 'LT정밀', agenda: '7. PN2용 프레스 공정 이동 대차 확보', result: '- 샘플 대차 재활용 검토 결과 부적합\n- 현장 바닥 적재 문제 해소 위한 신규 대차 검토', owner: '정준호C', note: '대차와 박스간 밸런스 이슈', status: '보류', tags: ['대차', '공정이동'], reporter: 'user1', reporterName: '업무담당자', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), attachments: []
+      },
+      {
+        id: crypto.randomUUID(), reportDate: '2026-03-03', meetingTime: '14:00', reportType: '주간', category: '품질',
+        target: 'LT정밀', agenda: '1. 공정 품질 이슈 개선 조치(3건)', result: '- CTB 초기품 치수 부적합으로 생산중단 후 개선\n- 서포트바 원자재 긁힘 불량 개선\n- EVA 자동화 3호기 에어 실린더 교체 후 재가동', owner: '송재하C', note: '긴급성 높은 품질 이슈 재발 방지 필요', status: '完', tags: ['품질', '생산중단'], reporter: 'manager1', reporterName: '현장관리자', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), attachments: []
+      },
+      {
+        id: crypto.randomUUID(), reportDate: '2026-04-09', meetingTime: '16:10', reportType: '긴급', category: '긴급',
+        target: '생산현장', agenda: '삼송향 생산 설비 문제 발생', result: '- 긴급 점검 요청\n- 설비 상태 확인 후 조치 필요', owner: '김기형E', note: '즉시 공유 대상', status: '긴급', tags: ['긴급', '설비'], reporter: 'admin', reporterName: '관리자', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), attachments: []
+      }
+    ];
+
+    const state = {
+      db: null,
+      users: [],
+      entries: [],
+      currentUser: null,
+      activeTab: 'dashboard',
+      editingAttachments: []
+    };
+
+    const els = {};
+    const qs = (id) => document.getElementById(id);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      bindElements();
+      bindEvents();
+      await initApp();
+    });
+
+    function bindElements() {
+      [
+        'loginScreen','appShell','loginUsername','loginPassword','loginBtn','fillAdminBtn','logoutBtn','currentUserBadge','headerDateText','tabs',
+        'statCards','dailyBars','recentEntries','seedBtn','quickGoEntryBtn','entryForm','entryId','reportDate','meetingTime','reportType','status',
+        'category','target','owner','agenda','result','note','tags','attachments','attachmentPreview','saveBtn','resetFormBtn',
+        'filterFrom','filterTo','filterStatus','filterCategory','filterText','applyFilterBtn','clearFilterBtn','entryListWrap',
+        'weeklyFrom','weeklyTo','weeklyType','weeklyStatus','generateReportBtn','copyReportBtn','pngReportBtn','printReportBtn','reportPreview',
+        'usersAdminOnly','newUsername','newDisplayName','newPassword','newRole','addUserBtn','usersTableBody','toast'
+      ].forEach(id => els[id] = qs(id));
+    }
+
+    function bindEvents() {
+      els.loginBtn.addEventListener('click', handleLogin);
+      els.fillAdminBtn.addEventListener('click', () => {
+        els.loginUsername.value = 'admin';
+        els.loginPassword.value = 'admin123';
+      });
+      els.logoutBtn.addEventListener('click', logout);
+      document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
+      els.seedBtn.addEventListener('click', reseedSampleEntries);
+      els.quickGoEntryBtn.addEventListener('click', () => switchTab('entry'));
+      els.entryForm.addEventListener('submit', saveEntry);
+      els.resetFormBtn.addEventListener('click', resetEntryForm);
+      els.attachments.addEventListener('change', handleAttachmentSelection);
+      ['agenda','result','note'].forEach(id => qs(id).addEventListener('input', updateCounters));
+      els.applyFilterBtn.addEventListener('click', renderEntryList);
+      els.clearFilterBtn.addEventListener('click', clearFilters);
+      els.generateReportBtn.addEventListener('click', generateReport);
+      els.copyReportBtn.addEventListener('click', copyReportText);
+      els.pngReportBtn.addEventListener('click', downloadReportPng);
+      els.printReportBtn.addEventListener('click', printReport);
+      els.addUserBtn.addEventListener('click', addUser);
+    }
+
+    async function initApp() {
+      state.db = await openDB();
+      await ensureSeedData();
+      state.users = await dbGetAll('users');
+      state.entries = (await dbGetAll('entries')).sort(sortEntriesDesc);
+      state.currentUser = JSON.parse(localStorage.getItem('weekly_app_current_user') || 'null');
+      setDefaultDates();
+      updateCounters();
+      renderApp();
+      registerServiceWorker();
+    }
+
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains('users')) {
+            db.createObjectStore('users', { keyPath: 'username' });
+          }
+          if (!db.objectStoreNames.contains('entries')) {
+            db.createObjectStore('entries', { keyPath: 'id' });
+          }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function dbPut(storeName, value) {
+      return new Promise((resolve, reject) => {
+        const tx = state.db.transaction(storeName, 'readwrite');
+        tx.objectStore(storeName).put(value);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    function dbDelete(storeName, key) {
+      return new Promise((resolve, reject) => {
+        const tx = state.db.transaction(storeName, 'readwrite');
+        tx.objectStore(storeName).delete(key);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    function dbGetAll(storeName) {
+      return new Promise((resolve, reject) => {
+        const tx = state.db.transaction(storeName, 'readonly');
+        const req = tx.objectStore(storeName).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function ensureSeedData() {
+      const users = await dbGetAll('users');
+      if (!users.length) {
+        for (const user of DEFAULT_USERS) await dbPut('users', user);
+      }
+      const entries = await dbGetAll('entries');
+      if (!entries.length) {
+        for (const entry of SAMPLE_ENTRIES) await dbPut('entries', entry);
+      }
+    }
+
+    async function reseedSampleEntries() {
+      if (!confirm('현재 등록 자료를 모두 지우고 샘플 데이터를 다시 넣을까요?')) return;
+      const current = await dbGetAll('entries');
+      for (const row of current) await dbDelete('entries', row.id);
+      for (const entry of SAMPLE_ENTRIES.map(item => ({ ...item, id: crypto.randomUUID(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }))) {
+        await dbPut('entries', entry);
+      }
+      state.entries = (await dbGetAll('entries')).sort(sortEntriesDesc);
+      renderAllPanels();
+      toast('샘플 데이터를 다시 입력했습니다.');
+    }
+
+    function sortEntriesDesc(a, b) {
+      return `${b.reportDate} ${b.meetingTime || ''}`.localeCompare(`${a.reportDate} ${a.meetingTime || ''}`);
+    }
+
+    function setDefaultDates() {
+      const today = new Date();
+      const yyyyMmDd = formatDateInput(today);
+      els.reportDate.value = yyyyMmDd;
+      const monday = getMonday(today);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      els.weeklyFrom.value = formatDateInput(monday);
+      els.weeklyTo.value = formatDateInput(sunday);
+      els.filterFrom.value = '';
+      els.filterTo.value = '';
+      els.headerDateText.textContent = `${today.getFullYear()}년 ${today.getMonth()+1}월 ${today.getDate()}일 기준`;
+    }
+
+    function renderApp() {
+      const sessionUser = state.currentUser && state.users.find(u => u.username === state.currentUser.username && u.active);
+      if (!sessionUser) {
+        state.currentUser = null;
+        localStorage.removeItem('weekly_app_current_user');
+        els.loginScreen.classList.remove('hidden');
+        els.appShell.classList.add('hidden');
+        return;
+      }
+      state.currentUser = sessionUser;
+      els.currentUserBadge.textContent = `${state.currentUser.displayName} · ${state.currentUser.role === 'admin' ? '관리자' : '사용자'}`;
+      els.loginScreen.classList.add('hidden');
+      els.appShell.classList.remove('hidden');
+      renderAllPanels();
+    }
+
+    function renderAllPanels() {
+      renderDashboard();
+      renderEntryList();
+      renderUsers();
+      generateReport();
+      switchTab(state.activeTab);
+    }
+
+    function switchTab(tabName) {
+      state.activeTab = tabName;
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.dataset.tab === tabName));
+      document.querySelectorAll('.view-panel').forEach(panel => panel.classList.add('hidden'));
+      qs(tabName).classList.remove('hidden');
+      const adminOnly = state.currentUser?.role === 'admin';
+      const userTab = document.querySelector('.tab[data-tab="users"]');
+      userTab.style.display = adminOnly ? 'block' : 'none';
+      if (tabName === 'users' && !adminOnly) {
+        state.activeTab = 'dashboard';
+        document.querySelector('.tab[data-tab="dashboard"]').classList.add('active');
+        qs('dashboard').classList.remove('hidden');
+        els.usersAdminOnly.classList.add('hidden');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function handleLogin() {
+      const username = els.loginUsername.value.trim();
+      const password = els.loginPassword.value.trim();
+      state.users = await dbGetAll('users');
+      const user = state.users.find(u => u.username === username && u.password === password && u.active);
+      if (!user) {
+        toast('아이디 또는 비밀번호가 올바르지 않습니다.');
+        return;
+      }
+      state.currentUser = user;
+      localStorage.setItem('weekly_app_current_user', JSON.stringify({ username: user.username }));
+      els.loginPassword.value = '';
+      renderApp();
+      toast(`${user.displayName}님, 반갑습니다.`);
+    }
+
+    function logout() {
+      localStorage.removeItem('weekly_app_current_user');
+      state.currentUser = null;
+      renderApp();
+      toast('로그아웃했습니다.');
+    }
+
+    function updateCounters() {
+      ['agenda','result','note'].forEach(id => {
+        const el = qs(id);
+        const counter = document.querySelector(`[data-counter-for="${id}"]`);
+        if (counter) counter.textContent = `${el.value.length}/${el.maxLength}`;
+      });
+    }
+
+    function toast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add('show');
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => els.toast.classList.remove('show'), 2200);
+    }
+
+    function formatDateInput(date) {
+      const y = date.getFullYear();
+      const m = `${date.getMonth() + 1}`.padStart(2, '0');
+      const d = `${date.getDate()}`.padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatDateLabel(dateStr) {
+      if (!dateStr) return '-';
+      const [y,m,d] = dateStr.split('-');
+      return `${y}.${m}.${d}`;
+    }
+
+    function getMonday(date) {
+      const d = new Date(date);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      return new Date(d.setDate(diff));
+    }
+
+    function escapeHtml(str = '') {
+      return str
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function statusClass(status) {
+      if (status === '完') return 'status-done';
+      if (status === '보류') return 'status-hold';
+      if (status === '긴급') return 'status-urgent';
+      return 'status-progress';
+    }
+
+    function normalizeEntry(raw) {
+      return {
+        ...raw,
+        tags: Array.isArray(raw.tags) ? raw.tags : (raw.tags || '').split(',').map(v => v.trim()).filter(Boolean),
+        attachments: Array.isArray(raw.attachments) ? raw.attachments : []
+      };
+    }
+
+    async function handleAttachmentSelection() {
+      const files = Array.from(els.attachments.files || []);
+      const mapped = await Promise.all(files.map(readFileAsData));
+      state.editingAttachments = [...state.editingAttachments, ...mapped];
+      renderAttachmentPreview();
+      els.attachments.value = '';
+    }
+
+    function readFileAsData(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ id: crypto.randomUUID(), name: file.name, type: file.type || 'application/octet-stream', dataUrl: reader.result, size: file.size });
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderAttachmentPreview() {
+      if (!state.editingAttachments.length) {
+        els.attachmentPreview.innerHTML = '';
+        return;
+      }
+      els.attachmentPreview.innerHTML = state.editingAttachments.map(att => `
+        <div class="thumb">
+          <button class="remove-attach" type="button" data-remove-attach="${att.id}">×</button>
+          ${att.type.startsWith('image/') ? `<img src="${att.dataUrl}" alt="${escapeHtml(att.name)}" />` : `<div class="filetag">PDF<br>${escapeHtml(att.name)}</div>`}
+        </div>
+      `).join('');
+      document.querySelectorAll('[data-remove-attach]').forEach(btn => btn.addEventListener('click', () => {
+        state.editingAttachments = state.editingAttachments.filter(att => att.id !== btn.dataset.removeAttach);
+        renderAttachmentPreview();
+      }));
+    }
+
+    async function saveEntry(event) {
+      event.preventDefault();
+      const entryId = els.entryId.value || crypto.randomUUID();
+      const existing = state.entries.find(item => item.id === entryId);
+      if (existing && !canEdit(existing)) {
+        toast('본인 또는 관리자만 수정할 수 있습니다.');
+        return;
+      }
+      const entry = normalizeEntry({
+        id: entryId,
+        reportDate: els.reportDate.value,
+        meetingTime: els.meetingTime.value,
+        reportType: els.reportType.value,
+        category: els.category.value.trim(),
+        target: els.target.value.trim(),
+        agenda: els.agenda.value.trim(),
+        result: els.result.value.trim(),
+        owner: els.owner.value.trim(),
+        note: els.note.value.trim(),
+        status: els.status.value,
+        tags: els.tags.value.split(',').map(v => v.trim()).filter(Boolean),
+        reporter: existing?.reporter || state.currentUser.username,
+        reporterName: existing?.reporterName || state.currentUser.displayName,
+        createdAt: existing?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        attachments: state.editingAttachments,
+      });
+      if (!entry.reportDate || !entry.category || !entry.agenda || !entry.result) {
+        toast('등록일자, 구분, 안건, 협의결과는 필수입니다.');
+        return;
+      }
+      await dbPut('entries', entry);
+      state.entries = (await dbGetAll('entries')).map(normalizeEntry).sort(sortEntriesDesc);
+      resetEntryForm();
+      renderAllPanels();
+      switchTab('list');
+      toast(existing ? '업무 내용을 수정했습니다.' : '업무 내용을 등록했습니다.');
+    }
+
+    function resetEntryForm() {
+      els.entryForm.reset();
+      els.entryId.value = '';
+      els.reportDate.value = formatDateInput(new Date());
+      els.meetingTime.value = '13:30';
+      els.reportType.value = '주간';
+      els.status.value = '進';
+      state.editingAttachments = [];
+      renderAttachmentPreview();
+      updateCounters();
+      els.saveBtn.textContent = '저장하기';
+    }
+
+    function canEdit(entry) {
+      return state.currentUser?.role === 'admin' || entry.reporter === state.currentUser?.username;
+    }
+
+    function editEntry(id) {
+      const entry = state.entries.find(item => item.id === id);
+      if (!entry || !canEdit(entry)) {
+        toast('수정 권한이 없습니다.');
+        return;
+      }
+      els.entryId.value = entry.id;
+      els.reportDate.value = entry.reportDate;
+      els.meetingTime.value = entry.meetingTime || '13:30';
+      els.reportType.value = entry.reportType || '주간';
+      els.status.value = entry.status || '進';
+      els.category.value = entry.category || '';
+      els.target.value = entry.target || '';
+      els.owner.value = entry.owner || '';
+      els.agenda.value = entry.agenda || '';
+      els.result.value = entry.result || '';
+      els.note.value = entry.note || '';
+      els.tags.value = (entry.tags || []).join(', ');
+      state.editingAttachments = [...(entry.attachments || [])];
+      renderAttachmentPreview();
+      updateCounters();
+      els.saveBtn.textContent = '수정 저장';
+      switchTab('entry');
+      toast('수정할 내용을 불러왔습니다.');
+    }
+
+    async function deleteEntry(id) {
+      const entry = state.entries.find(item => item.id === id);
+      if (!entry || !canEdit(entry)) {
+        toast('삭제 권한이 없습니다.');
+        return;
+      }
+      if (!confirm('이 업무를 삭제할까요?')) return;
+      await dbDelete('entries', id);
+      state.entries = (await dbGetAll('entries')).map(normalizeEntry).sort(sortEntriesDesc);
+      renderAllPanels();
+      toast('삭제했습니다.');
+    }
+
+    function renderDashboard() {
+      const entries = state.entries;
+      const total = entries.length;
+      const progress = entries.filter(e => e.status === '進').length;
+      const done = entries.filter(e => e.status === '完').length;
+      const urgent = entries.filter(e => e.status === '긴급').length;
+      const hold = entries.filter(e => e.status === '보류').length;
+      els.statCards.innerHTML = `
+        <div class="stat"><span class="muted">전체 등록</span><strong>${total}</strong></div>
+        <div class="stat"><span class="muted">진행중</span><strong>${progress}</strong></div>
+        <div class="stat"><span class="muted">완료</span><strong>${done}</strong></div>
+        <div class="stat"><span class="muted">긴급/보류</span><strong>${urgent + hold}</strong></div>
+      `;
+
+      const recent7 = buildRecent7Days(entries);
+      const max = Math.max(1, ...recent7.map(item => item.count));
+      els.dailyBars.innerHTML = recent7.map(item => `
+        <div class="bar-row">
+          <div>${item.label}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(item.count/max)*100}%"></div></div>
+          <div>${item.count}</div>
+        </div>
+      `).join('');
+
+      const recent = entries.slice(0, 5);
+      els.recentEntries.innerHTML = recent.length ? recent.map(entry => `
+        <div class="entry-card">
+          <div class="entry-title">${escapeHtml(entry.agenda)}</div>
+          <div class="entry-meta">
+            <span>${formatDateLabel(entry.reportDate)}</span>
+            <span>·</span>
+            <span>${escapeHtml(entry.target || '-')}</span>
+            <span>·</span>
+            <span>${escapeHtml(entry.owner || '-')}</span>
+          </div>
+          <div class="stack">
+            <span class="pill">${escapeHtml(entry.category || '-')}</span>
+            <span class="pill ${statusClass(entry.status)}">${escapeHtml(entry.status)}</span>
+          </div>
+        </div>
+      `).join('') : `<div class="empty">아직 등록된 업무가 없습니다.</div>`;
+    }
+
+    function buildRecent7Days(entries) {
+      const today = new Date();
+      const result = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - i);
+        const label = `${d.getMonth()+1}/${d.getDate()}`;
+        const key = formatDateInput(d);
+        result.push({ label, count: entries.filter(e => e.reportDate === key).length });
+      }
+      return result;
+    }
+
+    function filterEntries() {
+      const from = els.filterFrom.value;
+      const to = els.filterTo.value;
+      const status = els.filterStatus.value;
+      const category = els.filterCategory.value.trim().toLowerCase();
+      const text = els.filterText.value.trim().toLowerCase();
+      return state.entries.filter(entry => {
+        if (from && entry.reportDate < from) return false;
+        if (to && entry.reportDate > to) return false;
+        if (status && entry.status !== status) return false;
+        if (category && !(entry.category || '').toLowerCase().includes(category)) return false;
+        if (text) {
+          const blob = [entry.agenda, entry.result, entry.owner, entry.target, entry.note, ...(entry.tags || [])].join(' ').toLowerCase();
+          if (!blob.includes(text)) return false;
+        }
+        return true;
+      }).sort(sortEntriesDesc);
+    }
+
+    function clearFilters() {
+      els.filterFrom.value = '';
+      els.filterTo.value = '';
+      els.filterStatus.value = '';
+      els.filterCategory.value = '';
+      els.filterText.value = '';
+      renderEntryList();
+    }
+
+    function renderEntryList() {
+      const filtered = filterEntries();
+      if (!filtered.length) {
+        els.entryListWrap.innerHTML = `<div class="empty">조건에 맞는 등록 내용이 없습니다.</div>`;
+        return;
+      }
+      const groups = groupBy(filtered, 'reportDate');
+      const html = Object.keys(groups).sort((a,b) => b.localeCompare(a)).map(date => `
+        <div class="entry-group">
+          <h3>${formatDateLabel(date)} (${groups[date].length}건)</h3>
+          ${groups[date].map(entryCardHtml).join('')}
+        </div>
+      `).join('');
+      els.entryListWrap.innerHTML = html;
+      wireEntryActions();
+    }
+
+    function entryCardHtml(entry) {
+      const attachHtml = (entry.attachments || []).length ? `
+        <div class="thumbs">
+          ${(entry.attachments || []).map(att => `
+            <a class="thumb" href="${att.dataUrl}" download="${escapeHtml(att.name)}" target="_blank" rel="noopener noreferrer">
+              ${att.type.startsWith('image/') ? `<img src="${att.dataUrl}" alt="${escapeHtml(att.name)}" />` : `<div class="filetag">PDF<br>${escapeHtml(att.name)}</div>`}
+            </a>
+          `).join('')}
+        </div>
+      ` : '';
+      return `
+        <div class="entry-card">
+          <div class="entry-head">
+            <div>
+              <div class="entry-title">${escapeHtml(entry.agenda)}</div>
+              <div class="entry-meta">
+                <span>${escapeHtml(entry.category || '-')}</span>
+                <span>·</span>
+                <span>${escapeHtml(entry.target || '-')}</span>
+                <span>·</span>
+                <span>${escapeHtml(entry.owner || '-')}</span>
+                <span>·</span>
+                <span>등록자 ${escapeHtml(entry.reporterName || entry.reporter || '-')}</span>
+              </div>
+            </div>
+            <div class="stack">
+              <span class="pill">${escapeHtml(entry.reportType || '주간')}</span>
+              <span class="pill ${statusClass(entry.status)}">${escapeHtml(entry.status || '進')}</span>
+            </div>
+          </div>
+          <div class="entry-content"><strong>협의 결과</strong>\n${escapeHtml(entry.result || '')}</div>
+          ${entry.note ? `<div class="entry-content"><strong>비고</strong>\n${escapeHtml(entry.note)}</div>` : ''}
+          ${entry.tags?.length ? `<div class="entry-meta" style="margin-top:10px">태그: ${entry.tags.map(tag => `#${escapeHtml(tag)}`).join(' ')}</div>` : ''}
+          ${attachHtml}
+          <div class="entry-actions">
+            <button class="btn btn-light" data-edit-id="${entry.id}">수정</button>
+            <button class="btn btn-danger" data-delete-id="${entry.id}">삭제</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function wireEntryActions() {
+      document.querySelectorAll('[data-edit-id]').forEach(btn => btn.addEventListener('click', () => editEntry(btn.dataset.editId)));
+      document.querySelectorAll('[data-delete-id]').forEach(btn => {
+        const entry = state.entries.find(item => item.id === btn.dataset.deleteId);
+        const allowed = entry && canEdit(entry);
+        btn.disabled = !allowed;
+        if (!allowed) {
+          btn.style.opacity = .45;
+          btn.title = '본인 또는 관리자만 삭제 가능';
+        } else {
+          btn.addEventListener('click', () => deleteEntry(btn.dataset.deleteId));
+        }
+      });
+      document.querySelectorAll('[data-edit-id]').forEach(btn => {
+        const entry = state.entries.find(item => item.id === btn.dataset.editId);
+        const allowed = entry && canEdit(entry);
+        btn.disabled = !allowed;
+        if (!allowed) {
+          btn.style.opacity = .45;
+          btn.title = '본인 또는 관리자만 수정 가능';
+        }
+      });
+    }
+
+    function groupBy(arr, key) {
+      return arr.reduce((acc, item) => {
+        const value = item[key] || '기타';
+        acc[value] = acc[value] || [];
+        acc[value].push(item);
+        return acc;
+      }, {});
+    }
+
+    function getWeeklyFilteredEntries() {
+      const from = els.weeklyFrom.value;
+      const to = els.weeklyTo.value;
+      const type = els.weeklyType.value;
+      const status = els.weeklyStatus.value;
+      return state.entries.filter(entry => {
+        if (from && entry.reportDate < from) return false;
+        if (to && entry.reportDate > to) return false;
+        if (type && entry.reportType !== type) return false;
+        if (status && entry.status !== status) return false;
+        return true;
+      }).sort((a,b) => a.reportDate.localeCompare(b.reportDate) || (a.meetingTime||'').localeCompare(b.meetingTime||''));
+    }
+
+    function generateReport() {
+      const entries = getWeeklyFilteredEntries();
+      const countsByStatus = groupBy(entries, 'status');
+      const countsByCategory = groupBy(entries, 'category');
+      const countsByReporter = groupBy(entries, 'reporterName');
+      const summaryBoxes = [
+        ['총 등록', entries.length],
+        ['진행중', (countsByStatus['進'] || []).length],
+        ['완료', (countsByStatus['完'] || []).length],
+        ['긴급', (countsByStatus['긴급'] || []).length],
+      ].map(([label, value]) => `<div class="summary-box"><div class="muted">${label}</div><strong style="font-size:1.45rem">${value}</strong></div>`).join('');
+
+      const categorySummary = Object.entries(countsByCategory).sort((a,b) => b[1].length - a[1].length).map(([k,v]) => `<li>${escapeHtml(k || '미분류')} : ${v.length}건</li>`).join('') || '<li>해당 없음</li>';
+      const reporterSummary = Object.entries(countsByReporter).sort((a,b) => b[1].length - a[1].length).map(([k,v]) => `<li>${escapeHtml(k || '미상')} : ${v.length}건</li>`).join('') || '<li>해당 없음</li>';
+      const rows = entries.map((entry, index) => `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${formatDateLabel(entry.reportDate)}<br>${escapeHtml(entry.meetingTime || '')}</td>
+          <td>${escapeHtml(entry.category || '-')}<br><span class="muted">${escapeHtml(entry.target || '-')}</span></td>
+          <td><strong>${escapeHtml(entry.agenda)}</strong><br><div style="white-space:pre-wrap">${escapeHtml(entry.result)}</div>${entry.note ? `<div class="muted" style="margin-top:8px">비고: ${escapeHtml(entry.note)}</div>` : ''}</td>
+          <td>${escapeHtml(entry.owner || '-')}</td>
+          <td>${escapeHtml(entry.reporterName || entry.reporter || '-')}</td>
+          <td>${escapeHtml(entry.status || '-')}</td>
+        </tr>
+      `).join('') || `<tr><td colspan="7">해당 기간에 등록된 자료가 없습니다.</td></tr>`;
+
+      els.reportPreview.innerHTML = `
+        <div class="report-sheet" id="reportSheet">
+          <h1>주간 업무 보고서</h1>
+          <div class="report-meta">
+            <span>기간: ${formatDateLabel(els.weeklyFrom.value)} ~ ${formatDateLabel(els.weeklyTo.value)}</span>
+            <span>유형: ${escapeHtml(els.weeklyType.value || '전체')}</span>
+            <span>상태: ${escapeHtml(els.weeklyStatus.value || '전체')}</span>
+          </div>
+          <div class="summary-list">${summaryBoxes}</div>
+          <div class="grid grid-2" style="margin:12px 0 16px;gap:12px">
+            <div class="summary-box"><h3 style="font-size:1rem">구분별 합계</h3><ul>${categorySummary}</ul></div>
+            <div class="summary-box"><h3 style="font-size:1rem">등록자별 합계</h3><ul>${reporterSummary}</ul></div>
+          </div>
+          <h2 style="font-size:1.05rem;margin:18px 0 8px">상세 업무 목록</h2>
+          <table class="report-table">
+            <thead><tr><th style="width:54px">No</th><th style="width:120px">일시</th><th style="width:140px">구분/대상</th><th>안건 및 협의결과</th><th style="width:90px">담당자</th><th style="width:90px">등록자</th><th style="width:70px">상태</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    async function copyReportText() {
+      const entries = getWeeklyFilteredEntries();
+      const summary = [
+        `주간 업무 보고 (${formatDateLabel(els.weeklyFrom.value)} ~ ${formatDateLabel(els.weeklyTo.value)})`,
+        `총 ${entries.length}건`,
+        `진행 ${(entries.filter(e => e.status === '進').length)}건 / 완료 ${(entries.filter(e => e.status === '完').length)}건 / 긴급 ${(entries.filter(e => e.status === '긴급').length)}건`,
+        '',
+        ...entries.map((entry, idx) => `${idx + 1}. [${entry.category || '-'} / ${entry.target || '-'}] ${entry.agenda} / ${entry.result.replace(/\n/g, ' ')}`)
+      ].join('\n');
+      try {
+        await navigator.clipboard.writeText(summary);
+        toast('주간보고 요약문을 복사했습니다.');
+      } catch {
+        toast('복사에 실패했습니다.');
+      }
+    }
+
+    function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = String(text || '').split(/\s+/);
+      let line = '';
+      const lines = [];
+      for (const word of words) {
+        const test = line ? `${line} ${word}` : word;
+        if (ctx.measureText(test).width > maxWidth) {
+          if (line) lines.push(line);
+          line = word;
+        } else {
+          line = test;
+        }
+      }
+      if (line) lines.push(line);
+      lines.forEach((ln, idx) => ctx.fillText(ln, x, y + idx * lineHeight));
+      return lines.length * lineHeight;
+    }
+
+    function downloadReportPng() {
+      const entries = getWeeklyFilteredEntries();
+      const canvas = document.createElement('canvas');
+      const width = 1400;
+      const rowHeight = 110;
+      const height = Math.max(900, 260 + rowHeight * Math.max(entries.length, 1));
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '700 34px Malgun Gothic';
+      ctx.fillText('주간 업무 보고서', 60, 70);
+      ctx.font = '18px Malgun Gothic';
+      ctx.fillStyle = '#475569';
+      ctx.fillText(`기간: ${formatDateLabel(els.weeklyFrom.value)} ~ ${formatDateLabel(els.weeklyTo.value)}`, 60, 110);
+      ctx.fillText(`총 등록 ${entries.length}건`, 60, 140);
+
+      const headers = ['No', '일시', '구분/대상', '안건', '협의결과', '담당자', '상태'];
+      const xs = [60, 110, 240, 430, 820, 1170, 1285];
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(50, 170, 1300, 46);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '700 17px Malgun Gothic';
+      headers.forEach((h, idx) => ctx.fillText(h, xs[idx], 199));
+      ctx.font = '15px Malgun Gothic';
+
+      let y = 245;
+      const drawEntries = entries.length ? entries : [{ reportDate: '-', meetingTime: '', category: '-', target: '-', agenda: '등록된 자료 없음', result: '해당 기간의 자료가 없습니다.', owner: '-', status: '-' }];
+      drawEntries.forEach((entry, index) => {
+        ctx.strokeStyle = '#dbe3ef';
+        ctx.strokeRect(50, y - 28, 1300, rowHeight - 10);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillText(String(index + 1), xs[0], y);
+        ctx.fillText(`${formatDateLabel(entry.reportDate)} ${entry.meetingTime || ''}`.trim(), xs[1], y);
+        wrapCanvasText(ctx, `${entry.category || '-'} / ${entry.target || '-'}`, xs[2], y - 8, 170, 22);
+        wrapCanvasText(ctx, entry.agenda || '-', xs[3], y - 8, 360, 22);
+        wrapCanvasText(ctx, entry.result || '-', xs[4], y - 8, 320, 22);
+        wrapCanvasText(ctx, entry.owner || '-', xs[5], y - 8, 90, 22);
+        wrapCanvasText(ctx, entry.status || '-', xs[6], y - 8, 50, 22);
+        y += rowHeight;
+      });
+
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = `주간업무보고_${els.weeklyFrom.value}_${els.weeklyTo.value}.png`;
+      link.click();
+      toast('PNG 보고서를 다운로드했습니다.');
+    }
+
+    function printReport() {
+      generateReport();
+      window.print();
+    }
+
+    async function addUser() {
+      if (state.currentUser?.role !== 'admin') {
+        toast('관리자만 사용자 추가가 가능합니다.');
+        return;
+      }
+      const username = els.newUsername.value.trim();
+      const displayName = els.newDisplayName.value.trim();
+      const password = els.newPassword.value.trim();
+      const role = els.newRole.value;
+      if (!username || !displayName || !password) {
+        toast('사용자 정보를 모두 입력해주세요.');
+        return;
+      }
+      const exists = state.users.find(u => u.username === username);
+      if (exists) {
+        toast('이미 존재하는 아이디입니다.');
+        return;
+      }
+      await dbPut('users', { username, displayName, password, role, active: true, createdAt: new Date().toISOString() });
+      state.users = await dbGetAll('users');
+      els.newUsername.value = '';
+      els.newDisplayName.value = '';
+      els.newPassword.value = '';
+      els.newRole.value = 'user';
+      renderUsers();
+      toast('사용자를 추가했습니다.');
+    }
+
+    async function toggleUser(username) {
+      if (state.currentUser?.role !== 'admin') return;
+      const user = state.users.find(u => u.username === username);
+      if (!user || user.username === state.currentUser.username) {
+        toast('본인 계정은 비활성화할 수 없습니다.');
+        return;
+      }
+      await dbPut('users', { ...user, active: !user.active });
+      state.users = await dbGetAll('users');
+      renderUsers();
+      toast('사용자 상태를 변경했습니다.');
+    }
+
+    function renderUsers() {
+      const admin = state.currentUser?.role === 'admin';
+      els.usersAdminOnly.classList.toggle('hidden', !admin);
+      els.usersTableBody.innerHTML = state.users.map(user => `
+        <tr>
+          <td>${escapeHtml(user.username)}</td>
+          <td>${escapeHtml(user.displayName)}</td>
+          <td>${user.role === 'admin' ? '관리자' : '사용자'}</td>
+          <td>${user.active ? '사용' : '중지'}</td>
+          <td>${admin ? `<button class="btn btn-light" data-toggle-user="${user.username}">${user.active ? '비활성화' : '활성화'}</button>` : '-'}</td>
+        </tr>
+      `).join('');
+      document.querySelectorAll('[data-toggle-user]').forEach(btn => btn.addEventListener('click', () => toggleUser(btn.dataset.toggleUser)));
+    }
+
+    function registerServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+      }
+    }
+  </script>
 </body>
 </html>
